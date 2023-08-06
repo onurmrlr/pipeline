@@ -1,0 +1,17 @@
+trigger: none
+  
+name: MES-FAULT-API - Commit Message Check
+
+stages:
+
+- stage: CommitMessage_Check
+  jobs:
+  - job: CommitMessage_Check
+    pool:
+      name: "KDIOTPool"
+      demands:
+      - Helm -equals true
+    steps:
+    - template: ./templates/commit-message-control.yaml
+      parameters:
+        sourceBranch: $(System.PullRequest.SourceBranch)

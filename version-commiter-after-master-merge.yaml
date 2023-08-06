@@ -1,0 +1,33 @@
+name: MES-FAULT-API - Version Commiter After Master Merge
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - helm/mes-fault-api/Chart.yaml
+    - Platform360.MES.Fault/CHANGELOG.md
+  
+variables:
+- group: master-acr-credentials
+
+stages:
+
+- stage: VersionIncrement
+  jobs:
+  - job: VersionIncrement
+    pool:
+      name: "KDIOTPool"
+      demands:
+      - Windows_Agent -equals true
+    steps:
+    - checkout: self
+      clean: true
+      persistCredentials: true
+    - template: ./templates/version-commiter-after-merge.yaml
+      parameters:
+        csprojPath: "Platform360.MES.Fault/Platform360.MES.Fault.csproj"
+        chartyamlPath: "helm/mes-fault-api/Chart.yaml"
+        changelogmdPath: "Platform360.MES.Fault/CHANGELOG.md"
+        pipelineToken: $(pipelinetoken)

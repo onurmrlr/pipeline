@@ -1,0 +1,25 @@
+trigger: none
+  
+name: Build and Validate with Sonarqube
+
+pool:
+  name: "KDIOTPool"
+  demands:
+  - Helm -equals true
+
+steps:
+
+- template: ./templates/sonarqube-analysis-preparation.yaml
+  parameters:
+    SonarQubeServerEndPoint: "KD Sonarqube"
+
+- template: ./templates/net-core-build.yaml
+  parameters:
+    sdk : "5.x"
+    Projects: "Platform360.MES.Fault/Platform360.MES.Fault.csproj"
+    Condition : true
+    ProjectsMigration: | 
+     Platform360.MES.Fault.MSSQL/Platform360.MES.Fault.MSSQL.csproj
+     Platform360.MES.Fault.PostgreSQL/Platform360.MES.Fault.PostgreSQL.csproj
+
+- template: ./templates/sonarqube-analysis.yaml

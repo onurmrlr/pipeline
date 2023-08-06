@@ -1,0 +1,39 @@
+trigger: none
+  
+name: Create-Physical-Artifact
+
+pool:
+  name: "KDIOTPool"
+  demands:
+  - Helm -equals true
+
+steps:
+
+- template: ./templates/get-version.yaml
+  parameters:
+    searchPattern: "Platform360.MES.Fault/Platform360.MES.Fault.csproj"
+    variablesPrefix: "Api"
+
+- template: ./templates/net-core-build-master.yaml
+  parameters:
+    sdk : "5.x"
+    project: "Platform360.MES.Fault/Platform360.MES.Fault.csproj"
+    projectMsSql: "Platform360.MES.Fault.MSSQL/Platform360.MES.Fault.MSSQL.csproj"
+    projectPostgreSql: "Platform360.MES.Fault.PostgreSQL/Platform360.MES.Fault.PostgreSQL.csproj"
+
+- template: ./templates/net-core-publish-master.yaml
+  parameters:
+    project: "Platform360.MES.Fault/Platform360.MES.Fault.csproj"
+
+- template: ./templates/copy-files.yaml
+  parameters:
+    sourcefolder: "$(build.artifactstagingdirectory)/mig"
+    contents: |
+     **.MSSQL.dll
+     **.PostgreSQL.dll
+    targetfolder: "$(build.artifactstagingdirectory)"
+
+- template: ./templates/publish-build-artifacts.yaml
+  parameters:
+    PathtoPublish: $(build.artifactstagingdirectory)
+    ArtifactName: "mes-fault-api-$(Api_Version)"
